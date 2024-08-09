@@ -5,29 +5,35 @@ export const Strikers = () => {
   const [list, setList] = useState<PlayerDTO[]>([]);
   const [strikers, setStrikers] = useState<PlayerDTO[]>([]);
 
-  const getStrikers = useCallback(async () => {
+  const getStrikers = useCallback(async (): Promise<PlayerDTO[]> => {
     const response = await fetch("http://localhost:3000/api/strikers");
-    const data: PlayerDTO[] = await response.json();
-    const myStrikers = strikers.map((el) => el.name);
-    setList(data.filter((el) => !myStrikers.includes(el.name)).slice(0, 50));
-  }, [strikers]);
-
-  const getTeam = useCallback(async () => {
-    const response = await fetch("http://localhost:3000/api/team");
-    const data: PlayerDTO[] = await response.json();
-    const teamStrikers = data.filter(
-      (el) => el.role === "ATT" && el.name !== ""
-    );
-    setStrikers(teamStrikers);
+    return await response.json();
   }, []);
 
-  useEffect(() => {
-    getTeam();
-  }, [getTeam]);
+  const getTeam = useCallback(async (): Promise<PlayerDTO[]> => {
+    const response = await fetch("http://localhost:3000/api/team");
+    return await response.json();
+  }, []);
+
+  const loadData = useCallback(() => {
+    return Promise.all([getStrikers(), getTeam()]).then((results) => {
+      const loadedStrikers = results[0];
+      const loadedTeam = results[1];
+      const teamStrikers = loadedTeam
+        .filter((player) => player.role === "ATT")
+        .filter((teamStriker) => teamStriker.name !== "");
+      console.log(teamStrikers);
+      const teamStrikersNames = teamStrikers.map((s) => s.name);
+      const filteredStrikers = loadedStrikers.filter(
+        (s) => !teamStrikersNames.includes(s.name)
+      );
+      setList(filteredStrikers);
+    });
+  }, [getStrikers, getTeam]);
 
   useEffect(() => {
-    getStrikers();
-  }, [getStrikers]);
+    loadData();
+  }, [loadData]);
 
   const writeToExcel = async (newStrikers: PlayerDTO[]) => {
     try {
@@ -44,7 +50,7 @@ export const Strikers = () => {
       if (!response.ok) {
         throw new Error("Errore nella richiesta");
       }
-      getStrikers();
+      loadData();
       response.text();
     } catch (error) {
       console.error("Errore:", error);
@@ -75,9 +81,8 @@ export const Strikers = () => {
                       role: el.role,
                     },
                   ];
-                  writeToExcel(newStrikers).then(() => {
-                    getTeam();
-                  });
+                  setStrikers(newStrikers);
+                  writeToExcel(newStrikers);
                 }}
               >
                 ADD

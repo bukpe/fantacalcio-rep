@@ -5,7 +5,7 @@ export type PlayerDTO = {
   fvm: number;
   value: number;
   team: string;
-  role: string;
+  role: "POR" | "DIF" | "CEN" | "ATT";
 };
 
 export const Midfielders = () => {
@@ -14,6 +14,8 @@ export const Midfielders = () => {
   const [teamsAlreadyUsed, setTeamsAlreadyUsed] = useState<PlayerDTO["team"][]>(
     []
   );
+
+  console.log(list, midfielders, teamsAlreadyUsed);
 
   const getMidfielders = useCallback(async () => {
     const response = await fetch("http://localhost:3000/api/midfielders");
@@ -28,7 +30,6 @@ export const Midfielders = () => {
     const response = await fetch("http://localhost:3000/api/team");
     const data: PlayerDTO[] = await response.json();
     const teamMidfielders = data.filter((el) => el.role === "CEN");
-    console.log(teamMidfielders);
     const newTeamsAlreadyUsed = teamMidfielders.map((el) => el.team);
     setTeamsAlreadyUsed(newTeamsAlreadyUsed);
   }, []);
