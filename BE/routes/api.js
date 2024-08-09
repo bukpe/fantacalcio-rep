@@ -1,13 +1,14 @@
 const express = require('express');
 const router = express.Router();
 const xlsx = require('xlsx');
+const path = require('path')
 
-const filePath = 'C:/Users/b.ukpe/Desktop/TestFanta/Fanta.xlsx';
-    const workbook = xlsx.readFile(filePath);
+const filePath = path.join(__dirname, '../../Fanta.xlsx');
 
 router.get('/goalkeepers', (req, res) => {
 
   try {
+    const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
     const sheet = workbook.Sheets[sheetName];
     const data = xlsx.utils.sheet_to_json(sheet);
@@ -21,6 +22,7 @@ router.get('/goalkeepers', (req, res) => {
 router.get('/defenders', (req, res) => {
 
   try {
+    const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[1];
     const sheet = workbook.Sheets[sheetName];
     const data = xlsx.utils.sheet_to_json(sheet);
@@ -34,6 +36,7 @@ router.get('/defenders', (req, res) => {
 router.get('/midfielders', (req, res) => {
 
   try {
+    const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[2];
     const sheet = workbook.Sheets[sheetName];
     const data = xlsx.utils.sheet_to_json(sheet);
@@ -47,6 +50,7 @@ router.get('/midfielders', (req, res) => {
 router.get('/strikers', (req, res) => {
 
   try {
+    const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[3];
     const sheet = workbook.Sheets[sheetName];
     const data = xlsx.utils.sheet_to_json(sheet);
@@ -60,6 +64,7 @@ router.get('/strikers', (req, res) => {
 router.get('/team', (req, res) => {
 
   try {
+    const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[4];
     const sheet = workbook.Sheets[sheetName];
     const data = xlsx.utils.sheet_to_json(sheet);
@@ -72,6 +77,7 @@ router.get('/team', (req, res) => {
 
 router.post('/insertGoalkeepers', (req, res)=>{
     try {
+        const workbook = xlsx.readFile(filePath);
         const sheetName = workbook.SheetNames[4];
         const sheet = workbook.Sheets[sheetName];
         const { goalkeepers } = req.body;
@@ -100,6 +106,7 @@ router.post('/insertGoalkeepers', (req, res)=>{
 
 router.post('/insertDefenders', (req, res)=>{
     try {
+        const workbook = xlsx.readFile(filePath);
         const sheetName = workbook.SheetNames[4];
         const sheet = workbook.Sheets[sheetName];
         const { defenders } = req.body;
@@ -128,6 +135,7 @@ router.post('/insertDefenders', (req, res)=>{
 
 router.post('/insertMidfielders', (req, res)=>{
     try {
+        const workbook = xlsx.readFile(filePath);
         const sheetName = workbook.SheetNames[4];
         const sheet = workbook.Sheets[sheetName];
         const { midfielders } = req.body;
@@ -149,12 +157,13 @@ router.post('/insertMidfielders', (req, res)=>{
         xlsx.writeFile(workbook, filePath);
         res.status(200).send(workbook);
     } catch(error) {
-        res.status(500).send('Errore durante la scrittura nel file Excel.');
+        res.status(500).send(error);
     }
 })
 
 router.post('/insertStrikers', (req, res)=>{
     try {
+        const workbook = xlsx.readFile(filePath);
         const sheetName = workbook.SheetNames[4];
         const sheet = workbook.Sheets[sheetName];
         const { strikers } = req.body;
@@ -182,6 +191,7 @@ router.post('/insertStrikers', (req, res)=>{
 
 router.delete('/empty', (req, res)=>{
   try {
+    const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[4];
     const sheet = workbook.Sheets[sheetName];
 
