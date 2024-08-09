@@ -167,7 +167,6 @@ router.post('/insertStrikers', (req, res) => {
         const sheetName = workbook.SheetNames[4];
         const sheet = workbook.Sheets[sheetName];
         const { strikers } = req.body;
-        console.log(strikers)
 
         strikers.forEach((player, index) => {
             const row = 21 + index;
@@ -176,7 +175,6 @@ router.post('/insertStrikers', (req, res) => {
             sheet[`B${row}`] = { t: 'n', v: player.value };
             sheet[`C${row}`] = { t: 's', v: player.team }; 
         });
-        console.log(strikers)
 
         const maxRow = 21 + strikers.length - 1;
         const range = xlsx.utils.decode_range(sheet['!ref']);

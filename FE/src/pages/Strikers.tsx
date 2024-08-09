@@ -87,6 +87,7 @@ export const Strikers = () => {
               >
                 ADD
               </button>
+              <button>ADD TO</button>
               <button>DELETE</button>
             </li>
           );
