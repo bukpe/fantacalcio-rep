@@ -1,7 +1,11 @@
 import { useCallback, useEffect, useState } from "react";
 import { PlayerDTO } from "./Midfielders";
 
-export const Strikers = () => {
+type ComponentProps = {
+  users: string[];
+};
+
+export const Strikers = ({ users }: ComponentProps) => {
   const [list, setList] = useState<PlayerDTO[]>([]);
   const [strikers, setStrikers] = useState<PlayerDTO[]>([]);
 
@@ -16,17 +20,13 @@ export const Strikers = () => {
   }, []);
 
   const loadData = useCallback(() => {
-    return Promise.all([getStrikers(), getTeam()]).then((results) => {
+    return Promise.all([getStrikers(), getTeam()]).then(results => {
       const loadedStrikers = results[0];
       const loadedTeam = results[1];
-      const teamStrikers = loadedTeam
-        .filter((player) => player.role === "ATT")
-        .filter((teamStriker) => teamStriker.name !== "");
+      const teamStrikers = loadedTeam.filter(player => player.role === "ATT").filter(teamStriker => teamStriker.name !== "");
       console.log(teamStrikers);
-      const teamStrikersNames = teamStrikers.map((s) => s.name);
-      const filteredStrikers = loadedStrikers.filter(
-        (s) => !teamStrikersNames.includes(s.name)
-      );
+      const teamStrikersNames = teamStrikers.map(s => s.name);
+      const filteredStrikers = loadedStrikers.filter(s => !teamStrikersNames.includes(s.name));
       setList(filteredStrikers);
     });
   }, [getStrikers, getTeam]);
@@ -88,6 +88,11 @@ export const Strikers = () => {
                 ADD
               </button>
               <button>ADD TO</button>
+              <select>
+                {users.map((user, index) => {
+                  return <option key={index}>{user}</option>;
+                })}
+              </select>
               <button>DELETE</button>
             </li>
           );

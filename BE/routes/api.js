@@ -1,12 +1,24 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const xlsx = require('xlsx');
-const path = require('path')
+const xlsx = require("xlsx");
+const path = require("path");
 
-const filePath = path.join(__dirname, '../../Fanta.xlsx');
+const filePath = path.join(__dirname, "../../Fanta.xlsx");
 
-router.get('/goalkeepers', (req, res) => {
+router.get("/users", (req, res) => {
+  try {
+    const users = [];
+    const workbook = xlsx.readFile(filePath);
+    for (let i = 5; i < 14; i++) {
+      users.push(workbook.SheetNames[i]);
+    }
+    res.json(users);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
 
+router.get("/goalkeepers", (req, res) => {
   try {
     const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[0];
@@ -15,12 +27,11 @@ router.get('/goalkeepers', (req, res) => {
 
     res.json(data);
   } catch (error) {
-    res.status(500).send('Errore nella lettura del file Excel.');
+    res.status(500).send("Errore nella lettura del file Excel.");
   }
 });
 
-router.get('/defenders', (req, res) => {
-
+router.get("/defenders", (req, res) => {
   try {
     const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[1];
@@ -29,12 +40,11 @@ router.get('/defenders', (req, res) => {
 
     res.json(data);
   } catch (error) {
-    res.status(500).send('Errore nella lettura del file Excel.');
+    res.status(500).send("Errore nella lettura del file Excel.");
   }
 });
 
-router.get('/midfielders', (req, res) => {
-
+router.get("/midfielders", (req, res) => {
   try {
     const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[2];
@@ -43,12 +53,11 @@ router.get('/midfielders', (req, res) => {
 
     res.json(data);
   } catch (error) {
-    res.status(500).send('Errore nella lettura del file Excel.');
+    res.status(500).send("Errore nella lettura del file Excel.");
   }
 });
 
-router.get('/strikers', (req, res) => {
-
+router.get("/strikers", (req, res) => {
   try {
     const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[3];
@@ -57,12 +66,11 @@ router.get('/strikers', (req, res) => {
 
     res.json(data);
   } catch (error) {
-    res.status(500).send('Errore nella lettura del file Excel.');
+    res.status(500).send("Errore nella lettura del file Excel.");
   }
 });
 
-router.get('/team', (req, res) => {
-
+router.get("/team", (req, res) => {
   try {
     const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[4];
@@ -71,144 +79,144 @@ router.get('/team', (req, res) => {
 
     res.json(data);
   } catch (error) {
-    res.status(500).send('Errore nella lettura del file Excel.');
+    res.status(500).send("Errore nella lettura del file Excel.");
   }
 });
 
-router.post('/insertGoalkeepers', (req, res)=>{
-    try {
-        const workbook = xlsx.readFile(filePath);
-        const sheetName = workbook.SheetNames[4];
-        const sheet = workbook.Sheets[sheetName];
-        const { goalkeepers } = req.body;
-        console.log(req.body)
+router.post("/insertGoalkeepers", (req, res) => {
+  try {
+    const workbook = xlsx.readFile(filePath);
+    const sheetName = workbook.SheetNames[4];
+    const sheet = workbook.Sheets[sheetName];
+    const { goalkeepers } = req.body;
+    console.log(req.body);
 
-        goalkeepers.forEach((player, index) => {
-            const row = 2 + index;
+    goalkeepers.forEach((player, index) => {
+      const row = 2 + index;
 
-            sheet[`A${row}`] = { t: 's', v: player.name }; 
-            sheet[`B${row}`] = { t: 'n', v: player.value };
-            sheet[`C${row}`] = { t: 's', v: player.team }; 
-        });
+      sheet[`A${row}`] = { t: "s", v: player.name };
+      sheet[`B${row}`] = { t: "n", v: player.value };
+      sheet[`C${row}`] = { t: "s", v: player.team };
+    });
 
-        const maxRow = 2 + goalkeepers.length - 1;
-        const range = xlsx.utils.decode_range(sheet['!ref']);
-        range.e.r = Math.max(range.e.r, maxRow);
-        range.e.c = Math.max(range.e.c, 2);
-        sheet['!ref'] = xlsx.utils.encode_range(range);
+    const maxRow = 2 + goalkeepers.length - 1;
+    const range = xlsx.utils.decode_range(sheet["!ref"]);
+    range.e.r = Math.max(range.e.r, maxRow);
+    range.e.c = Math.max(range.e.c, 2);
+    sheet["!ref"] = xlsx.utils.encode_range(range);
 
-        xlsx.writeFile(workbook, filePath);
-        res.status(200).send(workbook);
-    } catch(error) {
-        res.status(500).send('Errore durante la scrittura nel file Excel.');
-    }
-})
-
-router.post('/insertDefenders', (req, res)=>{
-    try {
-        const workbook = xlsx.readFile(filePath);
-        const sheetName = workbook.SheetNames[4];
-        const sheet = workbook.Sheets[sheetName];
-        const { defenders } = req.body;
-        console.log(req.body)
-
-        defenders.forEach((player, index) => {
-            const row = 5 + index;
-
-            sheet[`A${row}`] = { t: 's', v: player.name }; 
-            sheet[`B${row}`] = { t: 'n', v: player.value };
-            sheet[`C${row}`] = { t: 's', v: player.team }; 
-        });
-
-        const maxRow = 5 + defenders.length - 1;
-        const range = xlsx.utils.decode_range(sheet['!ref']);
-        range.e.r = Math.max(range.e.r, maxRow);
-        range.e.c = Math.max(range.e.c, 2);
-        sheet['!ref'] = xlsx.utils.encode_range(range);
-
-        xlsx.writeFile(workbook, filePath);
-        res.status(200).send(workbook);
-    } catch(error) {
-        res.status(500).send('Errore durante la scrittura nel file Excel.');
-    }
-})
-
-router.post('/insertMidfielders', (req, res)=>{
-    try {
-        const workbook = xlsx.readFile(filePath);
-        const sheetName = workbook.SheetNames[4];
-        const sheet = workbook.Sheets[sheetName];
-        const { midfielders } = req.body;
-
-        midfielders.forEach((player, index) => {
-            const row = 13 + index;
-
-            sheet[`A${row}`] = { t: 's', v: player.name }; 
-            sheet[`B${row}`] = { t: 'n', v: player.value };
-            sheet[`C${row}`] = { t: 's', v: player.team }; 
-        });
-
-        const maxRow = 13 + midfielders.length - 1;
-        const range = xlsx.utils.decode_range(sheet['!ref']);
-        range.e.r = Math.max(range.e.r, maxRow);
-        range.e.c = Math.max(range.e.c, 2);
-        sheet['!ref'] = xlsx.utils.encode_range(range);
-
-        xlsx.writeFile(workbook, filePath);
-        res.status(200).send(workbook);
-    } catch(error) {
-        res.status(500).send(error);
-    }
-})
-
-router.post('/insertStrikers', (req, res) => {
-    try {
-        const workbook = xlsx.readFile(filePath);
-        const sheetName = workbook.SheetNames[4];
-        const sheet = workbook.Sheets[sheetName];
-        const { strikers } = req.body;
-
-        strikers.forEach((player, index) => {
-            const row = 21 + index;
-
-            sheet[`A${row}`] = { t: 's', v: player.name }; 
-            sheet[`B${row}`] = { t: 'n', v: player.value };
-            sheet[`C${row}`] = { t: 's', v: player.team }; 
-        });
-
-        const maxRow = 21 + strikers.length - 1;
-        const range = xlsx.utils.decode_range(sheet['!ref']);
-        range.e.r = Math.max(range.e.r, maxRow);
-        range.e.c = Math.max(range.e.c, 2);
-        sheet['!ref'] = xlsx.utils.encode_range(range);
-
-        xlsx.writeFile(workbook, filePath);
-        res.status(200).send('Attaccanti inseriti correttamente.');
-    } catch (error) {
-        res.status(500).send('Errore durante la scrittura nel file Excel.');
-    }
+    xlsx.writeFile(workbook, filePath);
+    res.status(200).send(workbook);
+  } catch (error) {
+    res.status(500).send("Errore durante la scrittura nel file Excel.");
+  }
 });
 
-router.delete('/empty', (req, res)=>{
+router.post("/insertDefenders", (req, res) => {
+  try {
+    const workbook = xlsx.readFile(filePath);
+    const sheetName = workbook.SheetNames[4];
+    const sheet = workbook.Sheets[sheetName];
+    const { defenders } = req.body;
+    console.log(req.body);
+
+    defenders.forEach((player, index) => {
+      const row = 5 + index;
+
+      sheet[`A${row}`] = { t: "s", v: player.name };
+      sheet[`B${row}`] = { t: "n", v: player.value };
+      sheet[`C${row}`] = { t: "s", v: player.team };
+    });
+
+    const maxRow = 5 + defenders.length - 1;
+    const range = xlsx.utils.decode_range(sheet["!ref"]);
+    range.e.r = Math.max(range.e.r, maxRow);
+    range.e.c = Math.max(range.e.c, 2);
+    sheet["!ref"] = xlsx.utils.encode_range(range);
+
+    xlsx.writeFile(workbook, filePath);
+    res.status(200).send(workbook);
+  } catch (error) {
+    res.status(500).send("Errore durante la scrittura nel file Excel.");
+  }
+});
+
+router.post("/insertMidfielders", (req, res) => {
+  try {
+    const workbook = xlsx.readFile(filePath);
+    const sheetName = workbook.SheetNames[4];
+    const sheet = workbook.Sheets[sheetName];
+    const { midfielders } = req.body;
+
+    midfielders.forEach((player, index) => {
+      const row = 13 + index;
+
+      sheet[`A${row}`] = { t: "s", v: player.name };
+      sheet[`B${row}`] = { t: "n", v: player.value };
+      sheet[`C${row}`] = { t: "s", v: player.team };
+    });
+
+    const maxRow = 13 + midfielders.length - 1;
+    const range = xlsx.utils.decode_range(sheet["!ref"]);
+    range.e.r = Math.max(range.e.r, maxRow);
+    range.e.c = Math.max(range.e.c, 2);
+    sheet["!ref"] = xlsx.utils.encode_range(range);
+
+    xlsx.writeFile(workbook, filePath);
+    res.status(200).send(workbook);
+  } catch (error) {
+    res.status(500).send(error);
+  }
+});
+
+router.post("/insertStrikers", (req, res) => {
+  try {
+    const workbook = xlsx.readFile(filePath);
+    const sheetName = workbook.SheetNames[4];
+    const sheet = workbook.Sheets[sheetName];
+    const { strikers } = req.body;
+
+    strikers.forEach((player, index) => {
+      const row = 21 + index;
+
+      sheet[`A${row}`] = { t: "s", v: player.name };
+      sheet[`B${row}`] = { t: "n", v: player.value };
+      sheet[`C${row}`] = { t: "s", v: player.team };
+    });
+
+    const maxRow = 21 + strikers.length - 1;
+    const range = xlsx.utils.decode_range(sheet["!ref"]);
+    range.e.r = Math.max(range.e.r, maxRow);
+    range.e.c = Math.max(range.e.c, 2);
+    sheet["!ref"] = xlsx.utils.encode_range(range);
+
+    xlsx.writeFile(workbook, filePath);
+    res.status(200).send("Attaccanti inseriti correttamente.");
+  } catch (error) {
+    res.status(500).send("Errore durante la scrittura nel file Excel.");
+  }
+});
+
+router.delete("/empty", (req, res) => {
   try {
     const workbook = xlsx.readFile(filePath);
     const sheetName = workbook.SheetNames[4];
     const sheet = workbook.Sheets[sheetName];
 
     for (let row = 2; row <= 26; row++) {
-      for (let col of ['A', 'B', 'C']) {
+      for (let col of ["A", "B", "C"]) {
         const cellAddress = `${col}${row}`;
         if (sheet[cellAddress]) {
-          sheet[cellAddress].v = '';
+          sheet[cellAddress].v = "";
         }
       }
     }
 
     xlsx.writeFile(workbook, filePath);
-    res.status(200).send('Le celle da A2 a C26 sono state svuotate.');
+    res.status(200).send("Le celle da A2 a C26 sono state svuotate.");
   } catch (error) {
-    res.status(500).send('Errore durante la scrittura nel file Excel.');
+    res.status(500).send("Errore durante la scrittura nel file Excel.");
   }
-})
+});
 
 module.exports = router;
