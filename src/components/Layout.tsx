@@ -1,15 +1,19 @@
-import { useCallback } from "react";
+import { useCallback, useState } from "react";
 import { Outlet, Link } from "react-router-dom";
 
 const Layout = () => {
+  const [key, setKey] = useState<number>(0);
   const onEmpty = useCallback(() => {
     fetch("http://localhost:3000/api/empty", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",
       },
+    }).then(() => {
+      const newKey = key + 1;
+      setKey(newKey);
     });
-  }, []);
+  }, [key]);
 
   return (
     <>
@@ -33,7 +37,7 @@ const Layout = () => {
         </ul>
       </nav>
 
-      <Outlet />
+      <Outlet key={key} />
       <button onClick={onEmpty}>EMPTY</button>
     </>
   );

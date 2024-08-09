@@ -4,7 +4,6 @@ import { PlayerDTO } from "./Midfielders";
 export const Goalkeepers = () => {
   const [list, setList] = useState<PlayerDTO[]>([]);
   const [goalkeepers, setGoalkeepers] = useState<PlayerDTO[]>([]);
-  console.log(goalkeepers);
 
   const getGoalkeepers = useCallback(async () => {
     const response = await fetch("http://localhost:3000/api/goalkeepers");
