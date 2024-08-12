@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PlayerDTO } from "./Midfielders";
 
 type ComponentProps = {
@@ -6,8 +6,13 @@ type ComponentProps = {
 };
 
 export const Strikers = ({ users }: ComponentProps) => {
+  const [selectedUser, setSelectedUser] = useState<string>(users[0]);
   const [list, setList] = useState<PlayerDTO[]>([]);
   const [strikers, setStrikers] = useState<PlayerDTO[]>([]);
+
+  const isAddDisabled = useMemo(() => {
+    return strikers.length === 6;
+  }, [strikers]);
 
   const getStrikers = useCallback(async (): Promise<PlayerDTO[]> => {
     const response = await fetch("http://localhost:3000/api/strikers");
@@ -19,12 +24,40 @@ export const Strikers = ({ users }: ComponentProps) => {
     return await response.json();
   }, []);
 
+  const insertStrikers = useCallback((strikers: PlayerDTO[]) => {
+    return fetch("http://localhost:3000/api/insertStrikers", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        strikers,
+      }),
+    });
+  }, []);
+
+  const insertStrikersTo = useCallback(
+    (strikers: PlayerDTO[]) => {
+      return fetch("http://localhost:3000/api/insertStrikersTo", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          strikers,
+          selectedUser,
+        }),
+      });
+    },
+    [selectedUser]
+  );
+
   const loadData = useCallback(() => {
     return Promise.all([getStrikers(), getTeam()]).then(results => {
       const loadedStrikers = results[0];
       const loadedTeam = results[1];
       const teamStrikers = loadedTeam.filter(player => player.role === "ATT").filter(teamStriker => teamStriker.name !== "");
-      console.log(teamStrikers);
+      setStrikers(teamStrikers);
       const teamStrikersNames = teamStrikers.map(s => s.name);
       const filteredStrikers = loadedStrikers.filter(s => !teamStrikersNames.includes(s.name));
       setList(filteredStrikers);
@@ -37,15 +70,7 @@ export const Strikers = ({ users }: ComponentProps) => {
 
   const writeToExcel = async (newStrikers: PlayerDTO[]) => {
     try {
-      const response = await fetch("http://localhost:3000/api/insertStrikers", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          strikers: newStrikers,
-        }),
-      });
+      const response = await insertStrikers(newStrikers);
 
       if (!response.ok) {
         throw new Error("Errore nella richiesta");
@@ -81,16 +106,20 @@ export const Strikers = ({ users }: ComponentProps) => {
                       role: el.role,
                     },
                   ];
-                  setStrikers(newStrikers);
                   writeToExcel(newStrikers);
                 }}
+                disabled={isAddDisabled}
               >
                 ADD
               </button>
               <button>ADD TO</button>
-              <select>
+              <select onChange={e => setSelectedUser(e.target.value)}>
                 {users.map((user, index) => {
-                  return <option key={index}>{user}</option>;
+                  return (
+                    <option key={index} value={user}>
+                      {user}
+                    </option>
+                  );
                 })}
               </select>
               <button>DELETE</button>
