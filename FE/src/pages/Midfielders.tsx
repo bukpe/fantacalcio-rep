@@ -1,12 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-
-export type PlayerDTO = {
-  name: string;
-  fvm: number;
-  value: number;
-  team: string;
-  role: "POR" | "DIF" | "CEN" | "ATT";
-};
+import { PlayerDTO, RoleEnum } from "../types/PlayerTypes";
 
 export const Midfielders = () => {
   const [list, setList] = useState<PlayerDTO[]>([]);
@@ -29,7 +22,7 @@ export const Midfielders = () => {
   const getTeam = useCallback(async () => {
     const response = await fetch("http://localhost:3000/api/team");
     const data: PlayerDTO[] = await response.json();
-    const teamMidfielders = data.filter((el) => el.role === "CEN");
+    const teamMidfielders = data.filter((el) => el.role === RoleEnum.CEN);
     const newTeamsAlreadyUsed = teamMidfielders.map((el) => el.team);
     setTeamsAlreadyUsed(newTeamsAlreadyUsed);
   }, []);
@@ -72,12 +65,12 @@ export const Midfielders = () => {
     <div className="App">
       <ul>
         {list.map((el, i) => {
-          const value = el.value * 0.8;
+          const maxValue = el.maxValue * 0.8;
           return (
             <li style={{ display: "flex" }} key={i}>
               <p>{`${el.name}
               
-              ${value}
+              ${maxValue}
               
               ${el.team}`}</p>
               <button
@@ -88,7 +81,7 @@ export const Midfielders = () => {
                       fvm: el.fvm,
                       name: el.name,
                       team: el.team,
-                      value,
+                      maxValue,
                       role: el.role,
                     },
                   ];

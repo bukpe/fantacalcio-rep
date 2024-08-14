@@ -1,12 +1,10 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { PlayerDTO } from "./Midfielders";
+import { PlayerDTO } from "../types/PlayerTypes";
+import { UsersEnum } from "../types/UserTypes";
 
-type ComponentProps = {
-  users: string[];
-};
-
-export const Strikers = ({ users }: ComponentProps) => {
-  const [selectedUser, setSelectedUser] = useState<string>(users[0]);
+export const Strikers = () => {
+  const [selectedUser, setSelectedUser] = useState<UsersEnum>(UsersEnum.BRIAN);
+  const [selectedUserTeam, setSelectedUserTeam] = useState<PlayerDTO[]>([]);
   const [list, setList] = useState<PlayerDTO[]>([]);
   const [strikers, setStrikers] = useState<PlayerDTO[]>([]);
 
@@ -53,13 +51,17 @@ export const Strikers = ({ users }: ComponentProps) => {
   );
 
   const loadData = useCallback(() => {
-    return Promise.all([getStrikers(), getTeam()]).then(results => {
+    return Promise.all([getStrikers(), getTeam()]).then((results) => {
       const loadedStrikers = results[0];
       const loadedTeam = results[1];
-      const teamStrikers = loadedTeam.filter(player => player.role === "ATT").filter(teamStriker => teamStriker.name !== "");
+      const teamStrikers = loadedTeam
+        .filter((player) => player.role === "ATT")
+        .filter((teamStriker) => teamStriker.name !== "");
       setStrikers(teamStrikers);
-      const teamStrikersNames = teamStrikers.map(s => s.name);
-      const filteredStrikers = loadedStrikers.filter(s => !teamStrikersNames.includes(s.name));
+      const teamStrikersNames = teamStrikers.map((s) => s.name);
+      const filteredStrikers = loadedStrikers.filter(
+        (s) => !teamStrikersNames.includes(s.name)
+      );
       setList(filteredStrikers);
     });
   }, [getStrikers, getTeam]);
@@ -86,12 +88,12 @@ export const Strikers = ({ users }: ComponentProps) => {
     <div className="App">
       <ul>
         {list.map((el, i) => {
-          const value = el.value * 0.8;
+          const maxValue = el.maxValue * 0.8;
           return (
             <li style={{ display: "flex" }} key={i}>
               <p>{`${el.name}
               
-              ${value}
+              ${maxValue}
               
               ${el.team}`}</p>
               <button
@@ -102,7 +104,7 @@ export const Strikers = ({ users }: ComponentProps) => {
                       fvm: el.fvm,
                       name: el.name,
                       team: el.team,
-                      value,
+                      maxValue,
                       role: el.role,
                     },
                   ];
@@ -113,8 +115,8 @@ export const Strikers = ({ users }: ComponentProps) => {
                 ADD
               </button>
               <button>ADD TO</button>
-              <select onChange={e => setSelectedUser(e.target.value)}>
-                {users.map((user, index) => {
+              <select onChange={(e) => console.log(e.target.value)}>
+                {Object.keys(UsersEnum).map((user, index) => {
                   return (
                     <option key={index} value={user}>
                       {user}

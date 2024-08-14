@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
-import { PlayerDTO } from "./Midfielders";
+import { PlayerDTO } from "../types/PlayerTypes";
 
 export const Defenders = () => {
   const [list, setList] = useState<PlayerDTO[]>([]);
@@ -62,12 +62,12 @@ export const Defenders = () => {
     <div className="App">
       <ul>
         {list.map((el, i) => {
-          const value = Math.ceil(el.value * 0.8);
+          const maxValue = Math.ceil(el.maxValue * 0.8);
           return (
             <li style={{ display: "flex" }} key={i}>
               <p>{`${el.name}
               
-              ${value}
+              ${maxValue}
               
               ${el.team}`}</p>
               <button
@@ -78,7 +78,7 @@ export const Defenders = () => {
                       fvm: el.fvm,
                       name: el.name,
                       team: el.team,
-                      value,
+                      maxValue,
                       role: el.role,
                     },
                   ];
