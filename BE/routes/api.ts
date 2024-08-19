@@ -2,8 +2,7 @@ import express, { Request, Response } from "express";
 import xlsx from "xlsx";
 import path from "path";
 import { ExcelPageEnum } from "../src/types/FileTypes";
-import { UsersEnum } from "../src/types/UserTypes";
-import { PlayerDTO } from "../src/types/PlayerTypes";
+import { PlayerDTO, TeamPlayerDTO } from "../src/types/PlayerTypes";
 
 const filePath = path.join(__dirname, "../../Fanta.xlsx");
 const router = express.Router();
@@ -52,27 +51,29 @@ router.get("/team/:user", (req, res) => {
 
 router.post("/insertGoalkeepers/:user", (req, res) => {
   try {
-    const { params } = req;
+    const { params, body } = req;
+    const { player, position } = body;
     const workbook = xlsx.readFile(filePath);
     const sheet = workbook.Sheets[params.user.toUpperCase()];
-    const { goalkeepers } = req.body;
 
-    goalkeepers.forEach((player: any, index: number) => {
-      const row = 2 + index;
+    // Calcola la riga basata sulla posizione specificata nell'URL
+    const row = 2 + parseInt(position, 10);
 
-      sheet[`A${row}`] = { t: "s", v: player.name };
-      sheet[`B${row}`] = { t: "n", v: player.value };
-      sheet[`C${row}`] = { t: "s", v: player.team };
-    });
+    // Inserisci i dati del player nel foglio di lavoro
+    sheet[`A${row}`] = { t: "s", v: player.name };
+    sheet[`B${row}`] = { t: "n", v: player.value };
+    sheet[`C${row}`] = { t: "s", v: player.team };
 
-    const maxRow = 2 + goalkeepers.length - 1;
+    // Aggiorna l'intervallo del foglio di lavoro
     const range = xlsx.utils.decode_range(sheet["!ref"] || "");
-    range.e.r = Math.max(range.e.r, maxRow);
+    range.e.r = Math.max(range.e.r, row);
     range.e.c = Math.max(range.e.c, 2);
     sheet["!ref"] = xlsx.utils.encode_range(range);
 
+    // Salva il file Excel
     xlsx.writeFile(workbook, filePath);
-    res.status(200).send(workbook);
+
+    res.status(200).send(sheet);
   } catch (error) {
     res.status(500).send("Errore durante la scrittura nel file Excel.");
   }

@@ -4,24 +4,20 @@ import { PlayerDTO } from "../types/PlayerTypes";
 export const Defenders = () => {
   const [list, setList] = useState<PlayerDTO[]>([]);
   const [defenders, setDefenders] = useState<PlayerDTO[]>([]);
-  const [teamsAlreadyUsed, setTeamsAlreadyUsed] = useState<PlayerDTO["team"][]>(
-    []
-  );
+  const [teamsAlreadyUsed, setTeamsAlreadyUsed] = useState<PlayerDTO["team"][]>([]);
 
   const getDefenders = useCallback(async () => {
     const response = await fetch("http://localhost:3000/api/defenders");
     const data: PlayerDTO[] = await response.json();
-    const filteredData = data.filter(
-      (el) => !teamsAlreadyUsed.includes(el.team)
-    );
+    const filteredData = data.filter(el => !teamsAlreadyUsed.includes(el.team));
     setList(filteredData.slice(0, 50));
   }, [teamsAlreadyUsed]);
 
   const getTeam = useCallback(async () => {
     const response = await fetch("http://localhost:3000/api/team");
     const data: PlayerDTO[] = await response.json();
-    const teamDefenders = data.filter((el) => el.role === "DIF");
-    const newTeamsAlreadyUsed = teamDefenders.map((el) => el.team);
+    const teamDefenders = data.filter(el => el.role === "DIF");
+    const newTeamsAlreadyUsed = teamDefenders.map(el => el.team);
     setTeamsAlreadyUsed(newTeamsAlreadyUsed);
   }, []);
 
@@ -35,18 +31,15 @@ export const Defenders = () => {
 
   const writeToExcel = async (newDefenders: PlayerDTO[]) => {
     try {
-      const response = await fetch(
-        "http://localhost:3000/api/insertDefenders",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            defenders: newDefenders,
-          }),
-        }
-      );
+      const response = await fetch("http://localhost:3000/api/insertDefenders", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          defenders: newDefenders,
+        }),
+      });
 
       if (!response.ok) {
         throw new Error("Errore nella richiesta");

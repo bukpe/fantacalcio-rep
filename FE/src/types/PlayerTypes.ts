@@ -35,3 +35,16 @@ export type PlayerDTO = {
   team: TeamEnum;
   role: RoleEnum;
 };
+
+export type TeamPlayerDTO = {
+  name: string;
+  value: number;
+  team: TeamEnum | undefined;
+  role: RoleEnum;
+};
+
+export enum GoalkeeperPositionEnum {
+  PRIMO = 0,
+  SECONDO = 1,
+  TERZO = 2,
+}

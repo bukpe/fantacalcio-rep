@@ -51,17 +51,13 @@ export const Strikers = () => {
   );
 
   const loadData = useCallback(() => {
-    return Promise.all([getStrikers(), getTeam()]).then((results) => {
+    return Promise.all([getStrikers(), getTeam()]).then(results => {
       const loadedStrikers = results[0];
       const loadedTeam = results[1];
-      const teamStrikers = loadedTeam
-        .filter((player) => player.role === "ATT")
-        .filter((teamStriker) => teamStriker.name !== "");
+      const teamStrikers = loadedTeam.filter(player => player.role === "ATT").filter(teamStriker => teamStriker.name !== "");
       setStrikers(teamStrikers);
-      const teamStrikersNames = teamStrikers.map((s) => s.name);
-      const filteredStrikers = loadedStrikers.filter(
-        (s) => !teamStrikersNames.includes(s.name)
-      );
+      const teamStrikersNames = teamStrikers.map(s => s.name);
+      const filteredStrikers = loadedStrikers.filter(s => !teamStrikersNames.includes(s.name));
       setList(filteredStrikers);
     });
   }, [getStrikers, getTeam]);
@@ -115,7 +111,7 @@ export const Strikers = () => {
                 ADD
               </button>
               <button>ADD TO</button>
-              <select onChange={(e) => console.log(e.target.value)}>
+              <select onChange={e => console.log(e.target.value)}>
                 {Object.keys(UsersEnum).map((user, index) => {
                   return (
                     <option key={index} value={user}>

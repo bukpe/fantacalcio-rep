@@ -8,15 +8,16 @@ import { Strikers } from "./pages/Strikers";
 import { Team } from "./pages/Team";
 import { useCallback, useEffect, useState } from "react";
 import { PlayerService } from "./services/PlayerService";
-import { PlayerDTO } from "./types/PlayerTypes";
+import { PlayerDTO, TeamPlayerDTO } from "./types/PlayerTypes";
 import { TeamService } from "./services/TeamService";
 import { UsersEnum } from "./types/UserTypes";
 
 export const App = () => {
+  const [myTeam, setMyTeam] = useState<TeamPlayerDTO[]>([]);
   const [allPlayers, setAllPlayers] = useState<PlayerDTO[]>([]);
 
-  const getTeamByUser = useCallback(() => {
-    return TeamService.getTeamByUser(UsersEnum.BRIAN);
+  const getTeam = useCallback((user: UsersEnum) => {
+    return TeamService.getTeamByUser(user);
   }, []);
 
   const getPlayers = useCallback(async () => {
@@ -24,13 +25,11 @@ export const App = () => {
   }, []);
 
   const loadData = useCallback(() => {
-    return Promise.all([getPlayers(), getTeamByUser()]).then(
-      ([players, team]) => {
-        console.log(team);
-        setAllPlayers(players);
-      }
-    );
-  }, [getPlayers]);
+    return Promise.all([getPlayers(), getTeam(UsersEnum.BRIAN)]).then(([players, brianTeam]) => {
+      setAllPlayers(players);
+      setMyTeam(brianTeam);
+    });
+  }, [getPlayers, getTeam]);
 
   useEffect(() => {
     loadData();
@@ -39,11 +38,7 @@ export const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route
-            index
-            path="goalkeepers"
-            element={<Goalkeepers allPlayers={allPlayers} />}
-          />
+          <Route index path="goalkeepers" element={<Goalkeepers allPlayers={allPlayers} myTeam={myTeam} />} />
           <Route path="defenders" element={<Defenders />} />
           <Route path="midfielders" element={<Midfielders />} />
           <Route path="strikers" element={<Strikers />} />
