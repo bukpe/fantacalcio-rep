@@ -1,96 +1,88 @@
 import { useCallback, useEffect, useState } from "react";
-import { PlayerDTO, RoleEnum } from "../types/PlayerTypes";
+import { MidfielderPositionEnum, PlayerDTO, RoleEnum, TeamPlayerDTO } from "../types/PlayerTypes";
+import { UsersEnum } from "../types/UserTypes";
+import { PlayerService } from "../services/PlayerService";
+import _ from "lodash";
 
-export const Midfielders = () => {
+type ComponentProps = {
+  allPlayers: PlayerDTO[];
+};
+
+export const Midfielders = ({ allPlayers }: ComponentProps) => {
   const [list, setList] = useState<PlayerDTO[]>([]);
-  const [midfielders, setMidfielders] = useState<PlayerDTO[]>([]);
-  const [teamsAlreadyUsed, setTeamsAlreadyUsed] = useState<PlayerDTO["team"][]>([]);
+  const [playerPosition, setPlayerPosition] = useState<MidfielderPositionEnum>(MidfielderPositionEnum.PRIMO);
+  const [selectedUser, setSelectedUser] = useState<UsersEnum>(UsersEnum.BRIAN);
+  const [purchaseValue, setPurchaseValue] = useState<number | undefined>(1);
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayerDTO | undefined>(undefined);
+  const [searchedPlayers, setSearchedPlayers] = useState<PlayerDTO[]>([]);
 
-  console.log(list, midfielders, teamsAlreadyUsed);
+  useEffect(() => {
+    const allMidfielders = allPlayers.filter(player => player.role === RoleEnum.CEN);
+    setList(allMidfielders);
+  }, [allPlayers]);
 
-  const getMidfielders = useCallback(async () => {
-    const response = await fetch("http://localhost:3000/api/midfielders");
-    const data: PlayerDTO[] = await response.json();
-    const filteredData = data.filter(el => !teamsAlreadyUsed.includes(el.team));
-    setList(filteredData.slice(0, 50));
-  }, [teamsAlreadyUsed]);
-
-  const getTeam = useCallback(async () => {
-    const response = await fetch("http://localhost:3000/api/team");
-    const data: PlayerDTO[] = await response.json();
-    const teamMidfielders = data.filter(el => el.role === RoleEnum.CEN);
-    const newTeamsAlreadyUsed = teamMidfielders.map(el => el.team);
-    setTeamsAlreadyUsed(newTeamsAlreadyUsed);
+  const insertMidfielder = useCallback((player: TeamPlayerDTO, user: UsersEnum, position: MidfielderPositionEnum) => {
+    return PlayerService.insertMidfielder(player, user, position);
   }, []);
 
-  useEffect(() => {
-    getTeam();
-  }, [getTeam]);
-
-  useEffect(() => {
-    getMidfielders();
-  }, [getMidfielders]);
-
-  const writeToExcel = async (newMidfielders: PlayerDTO[]) => {
-    try {
-      const response = await fetch("http://localhost:3000/api/insertMidfielders", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          midfielders: newMidfielders,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Errore nella richiesta");
-      }
-      getMidfielders();
-      const data = await response.text();
-      console.log("Risposta dal server:", data);
-    } catch (error) {
-      console.error("Errore:", error);
-    }
-  };
+  const buildList = useCallback((list: PlayerDTO[]) => {
+    return list.map((el, i) => {
+      return (
+        <li style={{ display: "flex" }} key={i} onClick={() => setSelectedPlayer(el)}>
+          <p>{`${el.name}
+          
+          ${el.maxValue}
+          
+          ${el.team}`}</p>
+        </li>
+      );
+    });
+  }, []);
 
   return (
     <div className="App">
-      <ul>
-        {list.map((el, i) => {
-          const maxValue = el.maxValue * 0.8;
-          return (
-            <li style={{ display: "flex" }} key={i}>
-              <p>{`${el.name}
-              
-              ${maxValue}
-              
-              ${el.team}`}</p>
-              <button
-                onClick={() => {
-                  const newMidfielders: PlayerDTO[] = [
-                    ...midfielders,
-                    {
-                      fvm: el.fvm,
-                      name: el.name,
-                      team: el.team,
-                      maxValue,
-                      role: el.role,
-                    },
-                  ];
-                  setMidfielders(newMidfielders);
-                  writeToExcel(newMidfielders).then(() => {
-                    getTeam();
-                  });
-                }}
-              >
-                ADD
-              </button>
-              <button>DELETE</button>
-            </li>
-          );
+      <input
+        type="text"
+        onChange={event => {
+          const value = event.target.value;
+          const filteredList = list.filter(el => el.name.toLowerCase().includes(value.toLowerCase()));
+          setSearchedPlayers(filteredList);
+        }}
+      />
+      {!_.isNil(selectedPlayer) && <div>{selectedPlayer.name}</div>}
+      <input
+        type="text"
+        value={purchaseValue}
+        onChange={event => {
+          setPurchaseValue(Number.isNaN(parseInt(event.target.value)) ? undefined : parseInt(event.target.value));
+        }}
+      />
+      <select value={MidfielderPositionEnum[playerPosition]} onChange={e => setPlayerPosition(MidfielderPositionEnum[e.target.value as keyof typeof MidfielderPositionEnum])}>
+        {Object.keys(MidfielderPositionEnum).map((option, i) => {
+          if (Number.isNaN(parseInt(option))) {
+            return <option key={i}>{option}</option>;
+          }
+          return null;
         })}
-      </ul>
+      </select>
+      <select value={UsersEnum[selectedUser]} onChange={e => setSelectedUser(UsersEnum[e.target.value as keyof typeof UsersEnum])}>
+        {Object.keys(UsersEnum).map((option, i) => {
+          if (Number.isNaN(parseInt(option))) {
+            return <option key={i}>{option}</option>;
+          }
+          return null;
+        })}
+      </select>
+      <button
+        disabled={purchaseValue === undefined || selectedPlayer === undefined}
+        onClick={() => {
+          insertMidfielder(PlayerService.mapPlayerDTOToTeamPlayerDTO(selectedPlayer, purchaseValue ?? 1), selectedUser, playerPosition);
+          setPurchaseValue(1);
+        }}
+      >
+        ADD
+      </button>
+      <ul>{buildList(searchedPlayers.length > 0 ? searchedPlayers : list)}</ul>
     </div>
   );
 };

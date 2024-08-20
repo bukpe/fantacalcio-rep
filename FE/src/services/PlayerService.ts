@@ -1,20 +1,13 @@
 import { AxiosResponse } from "axios";
-import { GoalkeeperPositionEnum, PlayerDTO, RoleEnum, TeamPlayerDTO } from "../types/PlayerTypes";
+import { DefenderPositionEnum, GoalkeeperPositionEnum, MidfielderPositionEnum, PlayerDTO, RoleEnum, StrikerPositionEnum, TeamPlayerDTO } from "../types/PlayerTypes";
 import AxiosService from "./AxiosService";
 import { UsersEnum } from "../types/UserTypes";
 
-const defaultGoalkeeper: TeamPlayerDTO = {
-  name: "",
-  role: RoleEnum.POR,
-  team: undefined,
-  value: 1,
-};
-
-const mapPlayerDTOToTeamPlayerDTO = (player: PlayerDTO, value: number): TeamPlayerDTO => {
+const mapPlayerDTOToTeamPlayerDTO = (player: PlayerDTO | undefined, value: number): TeamPlayerDTO => {
   return {
-    name: player.name,
-    role: player.role,
-    team: player.team,
+    name: player?.name ?? "",
+    role: player?.role ?? RoleEnum.POR,
+    team: player?.team,
     value,
   };
 };
@@ -29,9 +22,23 @@ const insertGoalkeeper = (player: TeamPlayerDTO, user: UsersEnum, position: Goal
   return AxiosService.post(`/insertGoalkeepers/${user}`, { player, position });
 };
 
+const insertDefender = (player: TeamPlayerDTO, user: UsersEnum, position: DefenderPositionEnum) => {
+  return AxiosService.post(`/insertDefenders/${user}`, { player, position });
+};
+
+const insertMidfielder = (player: TeamPlayerDTO, user: UsersEnum, position: MidfielderPositionEnum) => {
+  return AxiosService.post(`/insertMidfielders/${user}`, { player, position });
+};
+
+const insertStriker = (player: TeamPlayerDTO, user: UsersEnum, position: StrikerPositionEnum) => {
+  return AxiosService.post(`/insertStrikers/${user}`, { player, position });
+};
+
 export const PlayerService = {
-  defaultGoalkeeper,
   mapPlayerDTOToTeamPlayerDTO,
   getPlayers,
   insertGoalkeeper,
+  insertDefender,
+  insertMidfielder,
+  insertStriker,
 };

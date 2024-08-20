@@ -1,24 +1,42 @@
 import { useCallback, useEffect, useState } from "react";
-import { PlayerDTO } from "../types/PlayerTypes";
-
+import { TeamPlayerDTO } from "../types/PlayerTypes";
+import { TeamService } from "../services/TeamService";
+import { UsersEnum } from "../types/UserTypes";
 export const Team = () => {
-  const [team, setTeam] = useState<PlayerDTO[]>([]);
+  const [teams, setTeams] = useState<TeamPlayerDTO[][]>([]);
 
-  const getTeam = useCallback(async () => {
-    const response = await fetch("http://localhost:3000/api/team");
-    const data: PlayerDTO[] = await response.json();
-    setTeam(data);
+  const getTeam = useCallback((user: UsersEnum) => {
+    return TeamService.getTeamByUser(user);
   }, []);
 
   useEffect(() => {
-    getTeam();
+    Promise.all([
+      getTeam(UsersEnum.BRIAN),
+      getTeam(UsersEnum.LAZZA),
+      getTeam(UsersEnum.MICHE),
+      getTeam(UsersEnum.MICHI),
+      getTeam(UsersEnum.PIANTA),
+      getTeam(UsersEnum.PIER),
+      getTeam(UsersEnum.SIMO),
+      getTeam(UsersEnum.SUPER),
+      getTeam(UsersEnum.TIZI),
+      getTeam(UsersEnum.VAVA),
+    ]).then(loadedTeams => {
+      setTeams(loadedTeams);
+    });
   }, [getTeam]);
 
   return (
-    <ul>
-      {team.map((el, i) => {
-        return <li key={i}>{`${el.role} ${el.name ?? ""}`}</li>;
+    <>
+      {teams.map(team => {
+        return (
+          <ul>
+            {team.map((el, i) => {
+              return <li key={i}>{`${el.role} ${el.name ?? ""}`}</li>;
+            })}
+          </ul>
+        );
       })}
-    </ul>
+    </>
   );
 };

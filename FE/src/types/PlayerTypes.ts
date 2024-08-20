@@ -48,3 +48,36 @@ export enum GoalkeeperPositionEnum {
   SECONDO = 1,
   TERZO = 2,
 }
+
+export enum DefenderPositionEnum {
+  PRIMO = 0,
+  SECONDO = 1,
+  TERZO = 2,
+  QUARTO = 3,
+  QUINTO = 4,
+  SESTO = 5,
+  SETTIMO = 6,
+  OTTAVO = 7,
+}
+
+export enum MidfielderPositionEnum {
+  PRIMO = 0,
+  SECONDO = 1,
+  TERZO = 2,
+  QUARTO = 3,
+  QUINTO = 4,
+  SESTO = 5,
+  SETTIMO = 6,
+  OTTAVO = 7,
+}
+
+export enum StrikerPositionEnum {
+  PRIMO = 0,
+  SECONDO = 1,
+  TERZO = 2,
+  QUARTO = 3,
+  QUINTO = 4,
+  SESTO = 5,
+}
+
+export type PlayerPositionEnum = GoalkeeperPositionEnum | DefenderPositionEnum | MidfielderPositionEnum | StrikerPositionEnum;

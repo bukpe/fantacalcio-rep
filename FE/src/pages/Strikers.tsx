@@ -1,130 +1,88 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { PlayerDTO } from "../types/PlayerTypes";
+import { useCallback, useEffect, useState } from "react";
+import { StrikerPositionEnum, PlayerDTO, RoleEnum, TeamPlayerDTO } from "../types/PlayerTypes";
 import { UsersEnum } from "../types/UserTypes";
+import { PlayerService } from "../services/PlayerService";
+import _ from "lodash";
 
-export const Strikers = () => {
-  const [selectedUser, setSelectedUser] = useState<UsersEnum>(UsersEnum.BRIAN);
-  const [selectedUserTeam, setSelectedUserTeam] = useState<PlayerDTO[]>([]);
+type ComponentProps = {
+  allPlayers: PlayerDTO[];
+};
+
+export const Strikers = ({ allPlayers }: ComponentProps) => {
   const [list, setList] = useState<PlayerDTO[]>([]);
-  const [strikers, setStrikers] = useState<PlayerDTO[]>([]);
-
-  const isAddDisabled = useMemo(() => {
-    return strikers.length === 6;
-  }, [strikers]);
-
-  const getStrikers = useCallback(async (): Promise<PlayerDTO[]> => {
-    const response = await fetch("http://localhost:3000/api/strikers");
-    return await response.json();
-  }, []);
-
-  const getTeam = useCallback(async (): Promise<PlayerDTO[]> => {
-    const response = await fetch("http://localhost:3000/api/team");
-    return await response.json();
-  }, []);
-
-  const insertStrikers = useCallback((strikers: PlayerDTO[]) => {
-    return fetch("http://localhost:3000/api/insertStrikers", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        strikers,
-      }),
-    });
-  }, []);
-
-  const insertStrikersTo = useCallback(
-    (strikers: PlayerDTO[]) => {
-      return fetch("http://localhost:3000/api/insertStrikersTo", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          strikers,
-          selectedUser,
-        }),
-      });
-    },
-    [selectedUser]
-  );
-
-  const loadData = useCallback(() => {
-    return Promise.all([getStrikers(), getTeam()]).then(results => {
-      const loadedStrikers = results[0];
-      const loadedTeam = results[1];
-      const teamStrikers = loadedTeam.filter(player => player.role === "ATT").filter(teamStriker => teamStriker.name !== "");
-      setStrikers(teamStrikers);
-      const teamStrikersNames = teamStrikers.map(s => s.name);
-      const filteredStrikers = loadedStrikers.filter(s => !teamStrikersNames.includes(s.name));
-      setList(filteredStrikers);
-    });
-  }, [getStrikers, getTeam]);
+  const [playerPosition, setPlayerPosition] = useState<StrikerPositionEnum>(StrikerPositionEnum.PRIMO);
+  const [selectedUser, setSelectedUser] = useState<UsersEnum>(UsersEnum.BRIAN);
+  const [purchaseValue, setPurchaseValue] = useState<number | undefined>(undefined);
+  const [selectedPlayer, setSelectedPlayer] = useState<PlayerDTO | undefined>(undefined);
+  const [searchedPlayers, setSearchedPlayers] = useState<PlayerDTO[]>([]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    const allStrikers = allPlayers.filter(player => player.role === RoleEnum.ATT);
+    setList(allStrikers);
+  }, [allPlayers]);
 
-  const writeToExcel = async (newStrikers: PlayerDTO[]) => {
-    try {
-      const response = await insertStrikers(newStrikers);
+  const insertStriker = useCallback((player: TeamPlayerDTO, user: UsersEnum, position: StrikerPositionEnum) => {
+    return PlayerService.insertStriker(player, user, position);
+  }, []);
 
-      if (!response.ok) {
-        throw new Error("Errore nella richiesta");
-      }
-      loadData();
-      response.text();
-    } catch (error) {
-      console.error("Errore:", error);
-    }
-  };
+  const buildList = useCallback((list: PlayerDTO[]) => {
+    return list.map((el, i) => {
+      return (
+        <li style={{ display: "flex" }} key={i} onClick={() => setSelectedPlayer(el)}>
+          <p>{`${el.name}
+          
+          ${el.maxValue}
+          
+          ${el.team}`}</p>
+        </li>
+      );
+    });
+  }, []);
 
   return (
     <div className="App">
-      <ul>
-        {list.map((el, i) => {
-          const maxValue = el.maxValue * 0.8;
-          return (
-            <li style={{ display: "flex" }} key={i}>
-              <p>{`${el.name}
-              
-              ${maxValue}
-              
-              ${el.team}`}</p>
-              <button
-                onClick={() => {
-                  const newStrikers: PlayerDTO[] = [
-                    ...strikers,
-                    {
-                      fvm: el.fvm,
-                      name: el.name,
-                      team: el.team,
-                      maxValue,
-                      role: el.role,
-                    },
-                  ];
-                  writeToExcel(newStrikers);
-                }}
-                disabled={isAddDisabled}
-              >
-                ADD
-              </button>
-              <button>ADD TO</button>
-              <select onChange={e => console.log(e.target.value)}>
-                {Object.keys(UsersEnum).map((user, index) => {
-                  return (
-                    <option key={index} value={user}>
-                      {user}
-                    </option>
-                  );
-                })}
-              </select>
-              <button>DELETE</button>
-            </li>
-          );
+      <input
+        type="text"
+        onChange={event => {
+          const value = event.target.value;
+          const filteredList = list.filter(el => el.name.toLowerCase().includes(value.toLowerCase()));
+          setSearchedPlayers(filteredList);
+        }}
+      />
+      {!_.isNil(selectedPlayer) && <div>{selectedPlayer.name}</div>}
+      <input
+        type="text"
+        value={purchaseValue}
+        onChange={event => {
+          setPurchaseValue(Number.isNaN(parseInt(event.target.value)) ? undefined : parseInt(event.target.value));
+        }}
+      />
+      <select value={StrikerPositionEnum[playerPosition]} onChange={e => setPlayerPosition(StrikerPositionEnum[e.target.value as keyof typeof StrikerPositionEnum])}>
+        {Object.keys(StrikerPositionEnum).map((option, i) => {
+          if (Number.isNaN(parseInt(option))) {
+            return <option key={i}>{option}</option>;
+          }
+          return null;
         })}
-      </ul>
+      </select>
+      <select value={UsersEnum[selectedUser]} onChange={e => setSelectedUser(UsersEnum[e.target.value as keyof typeof UsersEnum])}>
+        {Object.keys(UsersEnum).map((option, i) => {
+          if (Number.isNaN(parseInt(option))) {
+            return <option key={i}>{option}</option>;
+          }
+          return null;
+        })}
+      </select>
+      <button
+        disabled={purchaseValue === undefined || selectedPlayer === undefined}
+        onClick={() => {
+          insertStriker(PlayerService.mapPlayerDTOToTeamPlayerDTO(selectedPlayer, purchaseValue ?? 1), selectedUser, playerPosition);
+          setPurchaseValue(1);
+        }}
+      >
+        ADD
+      </button>
+      <ul>{buildList(searchedPlayers.length > 0 ? searchedPlayers : list)}</ul>
     </div>
   );
 };
