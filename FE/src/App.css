@@ -1,38 +1,72 @@
-.App {
-  text-align: center;
+/* Rimuovi margini e padding di base */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+/* Imposta il font di base */
+body {
+  font-family: sans-serif;
+  line-height: 1.6;
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+/* Rimuovi i bordi e sfondi predefiniti */
+ol, ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+a {
+  text-decoration: none;
+  color: inherit; /* Usa il colore del testo dell'elemento genitore */
 }
 
-.App-link {
-  color: #61dafb;
+table {
+  border-collapse: collapse;
+  border-spacing: 0;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+img {
+  max-width: 100%;
+  height: auto;
+  display: block; /* Elimina spazi indesiderati sotto le immagini */
+}
+
+/* Elementi di blocco e inline */
+h1, h2, h3, h4, h5, h6 {
+  font-size: 100%;
+  font-weight: normal;
+}
+
+p {
+  margin-bottom: 1em;
+}
+
+button, input, select, textarea {
+  font: inherit;
+  margin: 0;
+}
+
+button, input {
+  overflow: visible;
+  border: none;
+  background: none;
+}
+
+/* Sottolineature e bordi */
+fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+legend {
+  display: block;
+}
+
+/* Reset per alcuni elementi di form */
+textarea {
+  resize: vertical;
 }

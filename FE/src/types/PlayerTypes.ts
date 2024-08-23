@@ -31,7 +31,8 @@ export enum RoleEnum {
 export type PlayerDTO = {
   name: string;
   fvm: number;
-  maxValue: number;
+  starting: number;
+  slot: number;
   team: TeamEnum;
   role: RoleEnum;
 };
@@ -80,4 +81,8 @@ export enum StrikerPositionEnum {
   SESTO = 5,
 }
 
-export type PlayerPositionEnum = GoalkeeperPositionEnum | DefenderPositionEnum | MidfielderPositionEnum | StrikerPositionEnum;
+export type PlayerPositionEnum =
+  | GoalkeeperPositionEnum
+  | DefenderPositionEnum
+  | MidfielderPositionEnum
+  | StrikerPositionEnum;

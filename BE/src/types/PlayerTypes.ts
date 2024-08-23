@@ -31,7 +31,8 @@ export enum RoleEnum {
 export type PlayerDTO = {
   name: string;
   fvm: number;
-  maxValue: number;
+  starting: number;
+  slot: number;
   team: TeamEnum;
   role: RoleEnum;
 };

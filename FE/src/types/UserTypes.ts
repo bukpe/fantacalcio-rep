@@ -1,3 +1,5 @@
+import { TeamPlayerDTO } from "./PlayerTypes";
+
 export enum UsersEnum {
   BRIAN = "BRIAN",
   SIMO = "SIMO",
@@ -10,3 +12,8 @@ export enum UsersEnum {
   SUPER = "SUPER",
   TIZI = "TIZI",
 }
+
+export type UserTeamDTO = {
+  user: string;
+  team: TeamPlayerDTO[];
+};

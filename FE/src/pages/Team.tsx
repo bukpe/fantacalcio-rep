@@ -1,9 +1,8 @@
 import { useCallback, useEffect, useState } from "react";
-import { TeamPlayerDTO } from "../types/PlayerTypes";
 import { TeamService } from "../services/TeamService";
-import { UsersEnum } from "../types/UserTypes";
+import { UsersEnum, UserTeamDTO } from "../types/UserTypes";
 export const Team = () => {
-  const [teams, setTeams] = useState<TeamPlayerDTO[][]>([]);
+  const [teams, setTeams] = useState<UserTeamDTO[]>([]);
 
   const getTeam = useCallback((user: UsersEnum) => {
     return TeamService.getTeamByUser(user);
@@ -21,17 +20,18 @@ export const Team = () => {
       getTeam(UsersEnum.SUPER),
       getTeam(UsersEnum.TIZI),
       getTeam(UsersEnum.VAVA),
-    ]).then(loadedTeams => {
+    ]).then((loadedTeams) => {
       setTeams(loadedTeams);
     });
   }, [getTeam]);
 
   return (
     <>
-      {teams.map(team => {
+      {teams.map((userTeam, j) => {
         return (
-          <ul>
-            {team.map((el, i) => {
+          <ul key={j}>
+            <p>{userTeam.user.toUpperCase()}</p>
+            {userTeam.team.map((el, i) => {
               return <li key={i}>{`${el.role} ${el.name ?? ""}`}</li>;
             })}
           </ul>
