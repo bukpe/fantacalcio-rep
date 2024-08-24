@@ -6,13 +6,14 @@ import { Defenders } from "./pages/Defenders";
 import { Midfielders } from "./pages/Midfielders";
 import { Strikers } from "./pages/Strikers";
 import { Team } from "./pages/Team";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { PlayerService } from "./services/PlayerService";
-import { PlayerDTO } from "./types/PlayerTypes";
+import { PlayerDTO, TeamPlayerDTO } from "./types/PlayerTypes";
 import { SettingsService } from "./services/SettingsService";
 import { SettingsDTO } from "./types/SettingsTypes";
 import { TeamService } from "./services/TeamService";
 import { UsersEnum, UserTeamDTO } from "./types/UserTypes";
+import _ from "lodash";
 
 export const App = () => {
   const [allPlayers, setAllPlayers] = useState<PlayerDTO[]>([]);
@@ -23,7 +24,18 @@ export const App = () => {
     midfieldersBudget: 0,
     strikersBudget: 0,
   });
-  const [myTeam, setMyTeam] = useState<UserTeamDTO | undefined>(undefined);
+  const [teams, setTeams] = useState<UserTeamDTO[]>([]);
+
+  const soldPlayers = useMemo(() => {
+    return teams.flatMap(team =>
+      team.team.reduce<TeamPlayerDTO[]>((acc, player) => {
+        if (player.name !== "" && !_.isNil(player.name)) {
+          acc.push(player);
+        }
+        return acc;
+      }, [])
+    );
+  }, [teams]);
 
   const getPlayers = useCallback(async () => {
     return PlayerService.getPlayers();
@@ -33,19 +45,17 @@ export const App = () => {
     return SettingsService.getSettings();
   }, []);
 
-  const getMyTeam = useCallback(() => {
-    return TeamService.getTeamByUser(UsersEnum.BRIAN);
+  const getTeam = useCallback((user: UsersEnum) => {
+    return TeamService.getTeamByUser(user);
   }, []);
 
   const loadData = useCallback(() => {
-    return Promise.all([getPlayers(), getSettings(), getMyTeam()]).then(
-      ([players, loadedSettings, myCurrentTeam]) => {
-        setSettings(loadedSettings);
-        setAllPlayers(players);
-        setMyTeam(myCurrentTeam);
-      }
-    );
-  }, [getMyTeam, getPlayers, getSettings]);
+    return Promise.all([getPlayers(), getSettings(), ...Object.values(UsersEnum).map(user => getTeam(user))]).then(([players, loadedSettings, ...loadedTeams]) => {
+      setSettings(loadedSettings);
+      setAllPlayers(players);
+      setTeams(loadedTeams);
+    });
+  }, [getPlayers, getSettings, getTeam]);
 
   useEffect(() => {
     loadData();
@@ -55,52 +65,11 @@ export const App = () => {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Layout />}>
-          <Route
-            index
-            path="goalkeepers"
-            element={
-              <Goalkeepers
-                allPlayers={allPlayers}
-                settings={settings}
-                myTeam={myTeam}
-                loadData={loadData}
-              />
-            }
-          />
-          <Route
-            path="defenders"
-            element={
-              <Defenders
-                allPlayers={allPlayers}
-                settings={settings}
-                myTeam={myTeam}
-                loadData={loadData}
-              />
-            }
-          />
-          <Route
-            path="midfielders"
-            element={
-              <Midfielders
-                allPlayers={allPlayers}
-                settings={settings}
-                myTeam={myTeam}
-                loadData={loadData}
-              />
-            }
-          />
-          <Route
-            path="strikers"
-            element={
-              <Strikers
-                allPlayers={allPlayers}
-                settings={settings}
-                myTeam={myTeam}
-                loadData={loadData}
-              />
-            }
-          />
-          <Route path="team" element={<Team />} />
+          <Route index path="goalkeepers" element={<Goalkeepers soldPlayers={soldPlayers} allPlayers={allPlayers} settings={settings} teams={teams} loadData={loadData} />} />
+          <Route path="defenders" element={<Defenders soldPlayers={soldPlayers} allPlayers={allPlayers} settings={settings} teams={teams} loadData={loadData} />} />
+          <Route path="midfielders" element={<Midfielders soldPlayers={soldPlayers} allPlayers={allPlayers} settings={settings} teams={teams} loadData={loadData} />} />
+          <Route path="strikers" element={<Strikers soldPlayers={soldPlayers} allPlayers={allPlayers} settings={settings} teams={teams} loadData={loadData} />} />
+          <Route path="team" element={<Team settings={settings} teams={teams} loadData={loadData} />} />
           <Route path="*" element={<></>} />
         </Route>
       </Routes>

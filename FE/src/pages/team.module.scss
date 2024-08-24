@@ -1,0 +1,23 @@
+.container {
+  display: flex;
+}
+
+ul {
+  margin-right: 150px;
+}
+
+.player {
+  display: flex;
+
+  span {
+    margin-right: 8px;
+
+    &:last-child {
+      margin-right: 0;
+    }
+  }
+
+  button {
+    margin-left: 20px;
+  }
+}

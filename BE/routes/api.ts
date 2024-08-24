@@ -180,23 +180,21 @@ router.post("/insertStrikers/:user", (req, res) => {
   }
 });
 
-router.delete("/empty/:user", (req, res) => {
+router.delete("/:user/:row", (req, res) => {
   try {
     const { params } = req;
     const workbook = xlsx.readFile(filePath);
     const sheet = workbook.Sheets[params.user.toUpperCase()];
 
-    for (let row = 2; row <= 26; row++) {
-      for (let col of ["A", "B", "C"]) {
-        const cellAddress = `${col}${row}`;
-        if (sheet[cellAddress]) {
-          sheet[cellAddress].v = "";
-        }
+    for (let col of ["A", "B", "C"]) {
+      const cellAddress = `${col}${params.row}`;
+      if (sheet[cellAddress]) {
+        sheet[cellAddress].v = "";
       }
     }
 
     xlsx.writeFile(workbook, filePath);
-    res.status(200).send("Le celle da A2 a C26 sono state svuotate.");
+    res.status(200).send(`Le celle da A${params.row} a C${params.row} sono state svuotate.`);
   } catch (error) {
     res.status(500).send("Errore durante la scrittura nel file Excel.");
   }

@@ -1,42 +1,57 @@
-import { useCallback, useEffect, useState } from "react";
-import { TeamService } from "../services/TeamService";
 import { UsersEnum, UserTeamDTO } from "../types/UserTypes";
-export const Team = () => {
-  const [teams, setTeams] = useState<UserTeamDTO[]>([]);
+import { PlayerService } from "../services/PlayerService";
+import styles from "./team.module.scss";
+import _ from "lodash";
+import { SettingsDTO } from "../types/SettingsTypes";
 
-  const getTeam = useCallback((user: UsersEnum) => {
-    return TeamService.getTeamByUser(user);
-  }, []);
+type ComponentProps = {
+  settings: SettingsDTO;
+  teams: UserTeamDTO[];
+  loadData(): Promise<void>;
+};
 
-  useEffect(() => {
-    Promise.all([
-      getTeam(UsersEnum.BRIAN),
-      getTeam(UsersEnum.LAZZA),
-      getTeam(UsersEnum.MICHE),
-      getTeam(UsersEnum.MICHI),
-      getTeam(UsersEnum.PIANTA),
-      getTeam(UsersEnum.PIER),
-      getTeam(UsersEnum.SIMO),
-      getTeam(UsersEnum.SUPER),
-      getTeam(UsersEnum.TIZI),
-      getTeam(UsersEnum.VAVA),
-    ]).then((loadedTeams) => {
-      setTeams(loadedTeams);
-    });
-  }, [getTeam]);
-
+export const Team = ({ settings, teams, loadData }: ComponentProps) => {
   return (
-    <>
+    <div className={styles.container}>
       {teams.map((userTeam, j) => {
+        const currentPurchases = userTeam.team.reduce((acc, curr) => {
+          if (curr.name !== "" && !_.isNil(curr.name)) {
+            return acc + curr.value;
+          }
+          return acc;
+        }, 0);
         return (
           <ul key={j}>
-            <p>{userTeam.user.toUpperCase()}</p>
+            <div>
+              <p>{userTeam.user.toUpperCase()}</p>
+              <p>{settings.creds - currentPurchases}</p>
+            </div>
             {userTeam.team.map((el, i) => {
-              return <li key={i}>{`${el.role} ${el.name ?? ""}`}</li>;
+              return (
+                <div key={i} className={styles.player}>
+                  <li>
+                    <span>{el.role}</span>
+                    <span>{el.name ?? ""}</span>
+                    <span>{el.value ?? ""}</span>
+                  </li>
+                  {el.name !== "" && !_.isNil(el.name) && (
+                    <button
+                      onClick={() => {
+                        const userEnumKey = userTeam.user.toUpperCase() as keyof typeof UsersEnum;
+                        PlayerService.deletePlayer(UsersEnum[userEnumKey], i + 2).then(() => {
+                          loadData();
+                        });
+                      }}
+                    >
+                      CANCELLA
+                    </button>
+                  )}
+                </div>
+              );
             })}
           </ul>
         );
       })}
-    </>
+    </div>
   );
 };
