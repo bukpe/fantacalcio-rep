@@ -49,7 +49,7 @@ export const Goalkeepers = ({ allPlayers, settings, teams, soldPlayers, loadData
     if (searchedName !== "" && !_.isNil(searchedName)) {
       newList = newList.filter(el => el.name.toLowerCase().includes(searchedName.toLowerCase()));
     }
-    if (!_.isNaN(searchedSlot) && !_.isNil(searchedSlot) && searchedSlot < 9 && !hide) {
+    if (!_.isNaN(searchedSlot) && !_.isNil(searchedSlot) && searchedSlot < 4 && !hide) {
       newList = newList.filter(el => el.slot === searchedSlot);
     }
     if (!_.isNil(searchedTeam)) {
@@ -77,6 +77,11 @@ export const Goalkeepers = ({ allPlayers, settings, teams, soldPlayers, loadData
     }
   }, [selectedUser, teams]);
 
+  useEffect(() => {
+    const allGoalkeepers = allPlayers.filter(player => player.role === RoleEnum.POR);
+    setList(allGoalkeepers);
+  }, [allPlayers]);
+
   const currentGoalkeepersPurchases = useMemo(() => {
     const currentPurchases = myTeam?.reduce((prev, curr) => {
       if (!_.isNil(curr.value) && curr.role === RoleEnum.POR) {
@@ -100,11 +105,6 @@ export const Goalkeepers = ({ allPlayers, settings, teams, soldPlayers, loadData
     const newBudget = settings.creds - (currentPurchases ?? 0);
     return newBudget;
   }, [myTeam, settings.creds]);
-
-  useEffect(() => {
-    const allGoalkeepers = allPlayers.filter(player => player.role === RoleEnum.POR);
-    setList(allGoalkeepers);
-  }, [allPlayers]);
 
   const insertGoalkeeper = useCallback((player: TeamPlayerDTO, user: UsersEnum, position: GoalkeeperPositionEnum) => {
     return PlayerService.insertGoalkeeper(player, user, position);
@@ -175,19 +175,6 @@ export const Goalkeepers = ({ allPlayers, settings, teams, soldPlayers, loadData
           )}
           <div>
             <label>CERCA SQUADRA</label>
-            <input
-              type="text"
-              onChange={event => {
-                const value = event.target.value;
-                setSearchedSlot(_.parseInt(value));
-              }}
-            />
-          </div>
-        </div>
-        <div>
-          {!_.isNil(selectedPlayer) && <div>{selectedPlayer.name}</div>}
-          <div>
-            <label>INSERISCI VALORE</label>
             <select value={searchedTeam} onChange={e => setSearchedTeam(TeamEnum[e.target.value as keyof typeof TeamEnum])}>
               <option>TUTTE</option>
               {Object.keys(TeamEnum).map((option, i) => {
@@ -197,6 +184,19 @@ export const Goalkeepers = ({ allPlayers, settings, teams, soldPlayers, loadData
                 return null;
               })}
             </select>
+          </div>
+        </div>
+        <div>
+          {!_.isNil(selectedPlayer) && <div>{selectedPlayer.name}</div>}
+          <div>
+            <label>INSERISCI VALORE</label>
+            <input
+              type="text"
+              value={purchaseValue ?? ""}
+              onChange={event => {
+                setPurchaseValue(Number.isNaN(parseInt(event.target.value)) ? undefined : parseInt(event.target.value));
+              }}
+            />
           </div>
           <select value={GoalkeeperPositionEnum[playerPosition]} onChange={e => setPlayerPosition(GoalkeeperPositionEnum[e.target.value as keyof typeof GoalkeeperPositionEnum])}>
             {Object.keys(GoalkeeperPositionEnum).map((option, i) => {
