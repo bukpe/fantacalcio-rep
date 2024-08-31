@@ -33,6 +33,7 @@ export const Team = ({ settings, teams, loadData }: ComponentProps) => {
                     <span>{el.role}</span>
                     <span>{el.name ?? ""}</span>
                     <span>{el.value ?? ""}</span>
+                    {userTeam.user.toUpperCase() === "BRIAN" && <span>{el.slot ?? ""}</span>}
                   </li>
                   {el.name !== "" && !_.isNil(el.name) && (
                     <button

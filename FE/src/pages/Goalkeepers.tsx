@@ -26,6 +26,7 @@ export const Goalkeepers = ({ allPlayers, settings, teams, soldPlayers, loadData
   const [searchedName, setSearchedName] = useState<string | undefined>(undefined);
   const [searchedSlot, setSearchedSlot] = useState<number | undefined>(undefined);
   const [searchedTeam, setSearchedTeam] = useState<TeamEnum | undefined>(undefined);
+  const [receivedSlots, setReceivedSlots] = useState<number[]>([]);
 
   const goalkeepersBudget = (settings.creds * settings.goalkeepersBudget) / 100;
 
@@ -39,6 +40,16 @@ export const Goalkeepers = ({ allPlayers, settings, teams, soldPlayers, loadData
     },
     [soldPlayers]
   );
+
+  useEffect(() => {
+    const myReceivedSlots = myTeam?.reduce<number[]>((acc, curr) => {
+      if (!_.isNil(curr) && curr.role === RoleEnum.POR) {
+        acc.push(curr.slot);
+      }
+      return acc;
+    }, []);
+    setReceivedSlots(myReceivedSlots ?? []);
+  }, [myTeam]);
 
   useEffect(() => {
     hide && setSearchedSlot(undefined);
@@ -125,19 +136,19 @@ export const Goalkeepers = ({ allPlayers, settings, teams, soldPlayers, loadData
           });
       return sortedList.map((el, i) => {
         return (
-          <li className={getIsSold(el) ? styles.sold : ""} key={i} onClick={() => setSelectedPlayer(el)}>
+          <li className={`${getIsSold(el) ? styles.sold : ""} ${receivedSlots.includes(el.slot) && !hide ? styles.inSlot : ""}`} key={i} onClick={() => setSelectedPlayer(el)}>
             <p>{`${el.name}
 
-          ${hide ? "" : el.slot}
+          ${hide ? "" : `s${el.slot}`}
 
-          ${hide ? "" : PlayerService.getGoalkeepersMaxPurchaseValue(el, settings, currentBudget)}
+          ${hide ? "" : `p${PlayerService.getGoalkeepersMaxPurchaseValue(el, settings, currentBudget)}`}
           
           ${el.team}`}</p>
           </li>
         );
       });
     },
-    [currentBudget, getIsSold, hide, settings]
+    [currentBudget, getIsSold, hide, receivedSlots, settings]
   );
 
   const buildContent = useCallback(() => {

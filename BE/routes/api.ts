@@ -74,6 +74,7 @@ router.post("/insertGoalkeepers/:user", (req, res) => {
     sheet[`A${row}`] = { t: "s", v: player.name };
     sheet[`B${row}`] = { t: "n", v: player.value };
     sheet[`C${row}`] = { t: "s", v: player.team };
+    if (params.user.toUpperCase() === "BRIAN") sheet[`D${row}`] = { t: "n", v: player.slot };
 
     // Aggiorna l'intervallo del foglio di lavoro
     const range = xlsx.utils.decode_range(sheet["!ref"] || "");
@@ -104,6 +105,7 @@ router.post("/insertDefenders/:user", (req, res) => {
     sheet[`A${row}`] = { t: "s", v: player.name };
     sheet[`B${row}`] = { t: "n", v: player.value };
     sheet[`C${row}`] = { t: "s", v: player.team };
+    if (params.user.toUpperCase() === "BRIAN") sheet[`D${row}`] = { t: "n", v: player.slot };
 
     // Aggiorna l'intervallo del foglio di lavoro
     const range = xlsx.utils.decode_range(sheet["!ref"] || "");
@@ -134,6 +136,7 @@ router.post("/insertMidfielders/:user", (req, res) => {
     sheet[`A${row}`] = { t: "s", v: player.name };
     sheet[`B${row}`] = { t: "n", v: player.value };
     sheet[`C${row}`] = { t: "s", v: player.team };
+    if (params.user.toUpperCase() === "BRIAN") sheet[`D${row}`] = { t: "n", v: player.slot };
 
     // Aggiorna l'intervallo del foglio di lavoro
     const range = xlsx.utils.decode_range(sheet["!ref"] || "");
@@ -164,6 +167,7 @@ router.post("/insertStrikers/:user", (req, res) => {
     sheet[`A${row}`] = { t: "s", v: player.name };
     sheet[`B${row}`] = { t: "n", v: player.value };
     sheet[`C${row}`] = { t: "s", v: player.team };
+    if (params.user.toUpperCase() === "BRIAN") sheet[`D${row}`] = { t: "n", v: player.slot };
 
     // Aggiorna l'intervallo del foglio di lavoro
     const range = xlsx.utils.decode_range(sheet["!ref"] || "");
@@ -186,10 +190,19 @@ router.delete("/:user/:row", (req, res) => {
     const workbook = xlsx.readFile(filePath);
     const sheet = workbook.Sheets[params.user.toUpperCase()];
 
-    for (let col of ["A", "B", "C"]) {
-      const cellAddress = `${col}${params.row}`;
-      if (sheet[cellAddress]) {
-        sheet[cellAddress].v = "";
+    if (params.user.toUpperCase() === "BRIAN") {
+      for (let col of ["A", "B", "C", "D"]) {
+        const cellAddress = `${col}${params.row}`;
+        if (sheet[cellAddress]) {
+          sheet[cellAddress].v = "";
+        }
+      }
+    } else {
+      for (let col of ["A", "B", "C"]) {
+        const cellAddress = `${col}${params.row}`;
+        if (sheet[cellAddress]) {
+          sheet[cellAddress].v = "";
+        }
       }
     }
 

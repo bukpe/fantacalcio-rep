@@ -27,6 +27,7 @@ export const Midfielders = ({ allPlayers, settings, teams, soldPlayers, loadData
   const [searchedSlot, setSearchedSlot] = useState<number | undefined>(undefined);
   const [searchedTeam, setSearchedTeam] = useState<TeamEnum | undefined>(undefined);
   const [sameTeamOfPurchased, setSameTeamOfPurchased] = useState<TeamEnum[]>();
+  const [receivedSlots, setReceivedSlots] = useState<number[]>([]);
 
   const midfieldersBudget = (settings.creds * settings.midfieldersBudget) / 100;
 
@@ -40,6 +41,16 @@ export const Midfielders = ({ allPlayers, settings, teams, soldPlayers, loadData
     },
     [soldPlayers]
   );
+
+  useEffect(() => {
+    const myReceivedSlots = myTeam?.reduce<number[]>((acc, curr) => {
+      if (!_.isNil(curr) && curr.role === RoleEnum.CEN) {
+        acc.push(curr.slot);
+      }
+      return acc;
+    }, []);
+    setReceivedSlots(myReceivedSlots ?? []);
+  }, [myTeam]);
 
   useEffect(() => {
     const myMidfielders = myTeam?.filter(player => player.role === RoleEnum.CEN);
@@ -170,19 +181,23 @@ export const Midfielders = ({ allPlayers, settings, teams, soldPlayers, loadData
           });
       return sortedList.map((el, i) => {
         return (
-          <li className={`${getIsSold(el) ? styles.sold : ""} ${!hide && sameTeamOfPurchased?.includes(el.team) ? styles.inTeam : ""}`} key={i} onClick={() => setSelectedPlayer(el)}>
+          <li
+            className={`${getIsSold(el) ? styles.sold : ""} ${!hide && sameTeamOfPurchased?.includes(el.team) ? styles.inTeam : ""} ${receivedSlots.includes(el.slot) && !hide ? styles.inSlot : ""}`}
+            key={i}
+            onClick={() => setSelectedPlayer(el)}
+          >
             <p>{`${el.name}
 
-          ${hide ? "" : el.slot}
+          ${hide ? "" : `s${el.slot}`}
 
-          ${hide ? "" : PlayerService.getMidfieldersMaxPurchaseValue(el, settings, currentBudget)}
+          ${hide ? "" : `p${PlayerService.getMidfieldersMaxPurchaseValue(el, settings, currentBudget)}`}
           
           ${el.team}`}</p>
           </li>
         );
       });
     },
-    [currentBudget, getIsSold, hide, sameTeamOfPurchased, settings]
+    [currentBudget, getIsSold, hide, receivedSlots, sameTeamOfPurchased, settings]
   );
 
   const buildContent = useCallback(() => {

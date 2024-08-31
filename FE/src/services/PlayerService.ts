@@ -119,6 +119,7 @@ const mapPlayerDTOToTeamPlayerDTO = (player: PlayerDTO | undefined, value: numbe
     role: player?.role ?? RoleEnum.POR,
     team: player?.team,
     value,
+    slot: player?.slot ?? 0,
   };
 };
 
